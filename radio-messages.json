@@ -1,0 +1,16 @@
+[
+  {
+    "code": "CO0001",
+    "delay": 5000,
+    "type": "text",
+    "title": "Zpráva z velitelství",
+    "content": "Hlášení pro všechny stanice: V sektoru Delta-7 byla zaznamenána zvýšená aktivita mutantů. Zvyšte ostražitost."
+  },
+  {
+    "code": "CO0002",
+    "delay": 10000,
+    "type": "audio",
+    "title": "Nouzové vysílání",
+    "content": "./assets/radio-static.mp3"
+  }
+]

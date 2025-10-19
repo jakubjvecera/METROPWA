@@ -1,0 +1,299 @@
+<!doctype html>
+<html lang="cs">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Терминал Метро 2033</title>
+<link rel="manifest" href="manifest.json" />
+<meta name="theme-color" content="#050505" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<style>
+  :root {
+    --bg:#050505;
+    --panel:#0e0e0e;
+    --accent:#8b0000;
+    --green:#00ff66;
+    --text:#d8d8d8;
+    --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono", "Courier New", monospace;
+  }
+  *{box-sizing:border-box}
+  html,body,#app{height:100%;margin:0;padding:0}
+  body{
+    background: linear-gradient(180deg, #050505 0%, #0b0b0b 100%);
+    color:var(--text);
+    font-family: var(--mono);
+    display:flex;
+    align-items:stretch;
+    justify-content:center;
+  }
+  html, body {
+  overflow: hidden;  /* zakáže scrollování */
+  touch-action: none; /* deaktivuje zoom a další gesta */
+  overscroll-behavior: none; /* zamezí přetahování na mobilu */
+}
+  #app{
+    width:100%;
+    max-width:900px;
+    height:100vh;
+    display:flex;
+    flex-direction:column;
+    position: relative;
+  }
+  /* tlačítka nástrojů */
+  #tools-container {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+  .tool-button {
+    width: 36px;
+    height: 36px;
+    background: var(--panel);
+    border: 1.5px solid var(--accent);
+    color: var(--green);
+    font-size: 18px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    user-select: none;
+    border-radius: 4px;
+    transition: background 0.2s ease;
+  }
+  .tool-button.active {
+    background: var(--accent);
+    color: #fff;
+  }
+  /* Geigerův počítač indikátor */
+  #geiger-indicator {
+    width: 12px;
+    height: 12px;
+    background-color: #1a431a; /* Tmavě zelená (vypnuto) */
+    border-radius: 50%;
+    border: 1px solid #000;
+    box-shadow: inset 0 0 3px rgba(0,0,0,0.5);
+    margin-right: 8px;
+    display: none; /* Skryto ve výchozím stavu */
+  }
+  #geiger-indicator.active {
+    display: block;
+    animation: geiger-blink 2s infinite steps(1, end);
+  }
+  @keyframes geiger-blink {
+    0%, 100% { background-color: #1a431a; } /* Vypnuto */
+    50% { background-color: var(--green); box-shadow: 0 0 5px var(--green); } /* Zapnuto */
+  }
+
+  /* horní lišta */
+  .topbar{
+    height:56px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:8px 12px;
+    background: linear-gradient(90deg, rgba(20,20,20,0.9), rgba(10,10,10,0.85));
+    border-bottom:2px solid rgba(139,0,0,0.6);
+  }
+  /* konzole */
+  #center{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:18px}
+  .big-title{font-size:42px;letter-spacing:3px;color:#bfbfbf}
+  #console{
+    width:92%;
+    max-width:760px;
+    background:linear-gradient(180deg, rgba(0,0,0,0.55), rgba(10,10,10,0.45));
+    border:1px solid rgba(80,80,80,0.3);
+    padding:10px;
+    margin-top:12px;
+    box-shadow: inset 0 0 24px rgba(0,0,0,0.6);
+    border-left:6px solid var(--accent);
+    font-size:14px;
+    max-height:200px;
+    overflow-y:auto;
+    color: var(--green);
+    display:flex;
+    flex-direction:column;
+  }
+  /* suroviny */
+  .resources{
+    display:flex;
+    justify-content:center;
+    gap:20px;
+    padding:8px;
+    background:linear-gradient(180deg,#070707,#0b0b0b);
+    border-top:2px solid rgba(139,0,0,0.6);
+    border-bottom:2px solid rgba(139,0,0,0.6);
+    font-size:14px;
+  }
+  .resources span{color:var(--green);}
+  /* formulář pro kódy */
+  #code-form{
+    display:flex;
+    gap:8px;
+    padding:10px;
+    background:linear-gradient(180deg,#070707,#0b0b0b);
+    border-top:3px solid rgba(139,0,0,0.6);
+  }
+  #code-input{
+    flex:1;
+    padding:12px 14px;
+    background:transparent;
+    border:1px solid rgba(255,255,255,0.06);
+    color:var(--green);
+    font-size:16px;
+    outline:none;
+  }
+  #code-submit{
+    padding:10px 16px;
+    background:linear-gradient(180deg,#220000,var(--accent));
+    color:#fff;
+    border:none;
+    cursor:pointer;
+    font-weight:700;
+  }
+  /* efekt svítilny */
+  #flashlight-overlay {
+    position: fixed;
+    top: 56px;
+    left: 0;
+    width: 100%;
+    height: calc(100% - 56px);
+    pointer-events: none;
+    background: rgba(255,255,255,1);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    z-index: 999;
+  }
+  #flashlight-overlay.dim {
+    background: rgba(255,255,255,0.4);
+  }
+  #flashlight-overlay.active {
+    opacity: 1;
+  }
+  /* tlačítko výměny baterie */
+  #battery-replace {
+    position: absolute;
+    top: 56px;
+    left: 0;
+    width: 100%;
+    padding: 12px;
+    background: var(--accent);
+    color: #fff;
+    font-size: 18px;
+    font-weight: bold;
+    text-align: center;
+    cursor: pointer;
+    display: none;
+    z-index: 1000;
+  }
+  /* Efekt a okno vysílačky */
+  #radio-overlay {
+    position: fixed;
+    top: 56px;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(5, 5, 5, 0.95);
+    z-index: 998;
+    display: none; /* Skryto ve výchozím stavu */
+    flex-direction: column;
+    padding: 10px;
+    border-top: 2px solid var(--accent);
+  }
+  #radio-overlay.active {
+    display: flex;
+  }
+  .radio-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: var(--green);
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--green);
+    margin-bottom: 10px;
+    font-size: 14px;
+  }
+  #radio-close-btn {
+    background: none;
+    border: 1px solid var(--accent);
+    color: var(--accent);
+    font-size: 20px;
+    line-height: 1;
+    padding: 0 6px;
+    cursor: pointer;
+  }
+  #radio-messages-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    color: var(--green);
+    font-size: 15px;
+    overflow-y: auto;
+    flex-grow: 1;
+  }
+</style>
+</head>
+<body>
+<main id="app">
+  <header class="topbar">
+    <span>TERMINAL</span>
+    <div id="geiger-indicator"></div>
+    <div id="tools-container"></div>
+    <span style="color:red;">OFFLINE</span>
+  </header>
+
+  <div id="battery-replace">Svítilna: vyměnit baterie</div>
+
+  <section id="center">
+    <div class="big-title">Метро 2033</div>
+    <div id="console">
+     <span id="status-msg" style="color: var(--text); margin-left: 12px;"></span>
+      <ul id="history"></ul>
+    </div>
+  </section>
+
+  <!-- efekt svítilny -->
+  <div id="flashlight-overlay"></div>
+
+  <!-- Okno vysílačky -->
+  <div id="radio-overlay">
+    <div class="radio-header">
+      <span>PŘÍCHOZÍ SIGNÁLY</span>
+      <button id="radio-close-btn">&times;</button>
+    </div>
+    <ul id="radio-messages-list"></ul>
+  </div>
+
+  <div class="resources">
+    <div>Baterie: <span id="res-b">3</span></div>
+    <div>Filtry: <span id="res-f">0</span></div>
+    <div>Voda: <span id="res-w">0</span></div>
+  </div>
+
+  <form id="code-form" autocomplete="off">
+    <input id="code-input" type="text" maxlength="40" placeholder="Zadej kód..." />
+    <button id="code-submit" type="submit">OK</button>
+  </form>
+</main>
+<script type="module" src="./app.js"></script>
+<script>
+  if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./sw.js')
+    .then(() => console.log('Service Worker registered'))
+    .catch(err => console.error('Service Worker registration failed:', err));
+}
+let lastTouchEnd = 0;
+
+document.addEventListener('touchend', function (event) {
+  let now = (new Date()).getTime();
+  if (now - lastTouchEnd <= 300) {
+    event.preventDefault();
+  }
+  lastTouchEnd = now;
+}, false);
+
+</script>
+</body>
+</html>
