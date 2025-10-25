@@ -233,6 +233,48 @@
     overflow-y: auto;
     flex-grow: 1;
   }
+
+  /* Efekt a okno Geigerova počítače */
+  #geiger-overlay {
+    position: fixed;
+    top: 56px;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(5, 5, 5, 0.95);
+    z-index: 997; /* Nižší než rádio */
+    display: none;
+    flex-direction: column;
+    padding: 10px;
+    border-top: 2px solid var(--green);
+    font-family: var(--mono);
+  }
+  #geiger-overlay.active {
+    display: flex;
+  }
+  .geiger-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: var(--green);
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--green);
+    margin-bottom: 20px;
+    font-size: 14px;
+  }
+  #geiger-close-btn {
+    background: none;
+    border: 1px solid var(--accent);
+    color: var(--accent);
+    font-size: 20px;
+    line-height: 1;
+    padding: 0 6px;
+    cursor: pointer;
+  }
+  #geiger-log-list {
+    list-style: none; padding: 0; margin: 0; color: var(--green); font-size: 15px; overflow-y: auto; flex-grow: 1;
+  }
+  #geiger-log-list li { padding: 2px 0; }
 </style>
 </head>
 <body>
@@ -260,10 +302,19 @@
   <!-- Okno vysílačky -->
   <div id="radio-overlay">
     <div class="radio-header">
-      <span>PŘÍCHOZÍ SIGNÁLY</span>
+      <span>RÁDIOVÝ PŘIJÍMAČ</span>
       <button id="radio-close-btn">&times;</button>
     </div>
     <ul id="radio-messages-list"></ul>
+  </div>
+
+  <!-- Okno Geigerova počítače -->
+  <div id="geiger-overlay">
+    <div class="geiger-header">
+      <span>GEIGER-MÜLLERŮV POČÍTAČ</span>
+      <button id="geiger-close-btn">&times;</button>
+    </div>
+    <ul id="geiger-log-list"></ul>
   </div>
 
   <div class="resources">

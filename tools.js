@@ -5,19 +5,19 @@ import { renderRadioMessages } from './src/mechanics/radio.js';
 
 
 const tools = [
-  { id: 'radio', label: '📻', title: 'Vysílačka' },
+//  { id: 'radio', label: '📻', title: 'Vysílačka' },
   { id: 'flashlight', label: '🔦', title: 'Svítilna' },
-  { id: 'gas-mask', label: '😷', title: 'Plynová maska' },
-  { id: 'geiger', label: '☢️', title: 'Geiger' },
+//  { id: 'gas-mask', label: '😷', title: 'Plynová maska' },
+//  { id: 'geiger', label: '☢️', title: 'Geiger' },
 ];
 
 let activeTools = [];
 const batteryReplaceBtn = document.getElementById('battery-replace');
 
 function toggleTool(toolId, btn) {
-  // Zabrání současné aktivaci vysílačky a svítilny
-  if ((toolId === 'radio' && activeTools.includes('flashlight')) ||
-      (toolId === 'flashlight' && activeTools.includes('radio'))) {
+  // Zabrání současné aktivaci nástrojů, které mají vlastní overlay
+  const overlayTools = ['radio', 'geiger'];
+  if (overlayTools.includes(toolId) && activeTools.some(t => overlayTools.includes(t) && t !== toolId)) {
     return;
   }
 
@@ -57,6 +57,7 @@ function activateToolEffect(toolId, btn) {
       break;
     case 'geiger':
       startGeiger();
+      document.getElementById('geiger-overlay').classList.add('active');
       break;
   }
 }
@@ -78,6 +79,7 @@ export function deactivateToolEffect(toolId) {
       break;
     case 'geiger':
       stopGeiger();
+      document.getElementById('geiger-overlay').classList.remove('active');
       break;
   }
 }
@@ -105,6 +107,14 @@ export function initTools() {
     if (radioCloseBtn && radioToolBtn) {
       radioCloseBtn.addEventListener('click', () => {
         toggleTool('radio', radioToolBtn);
+      });
+    }
+
+    const geigerCloseBtn = document.getElementById('geiger-close-btn');
+    const geigerToolBtn = document.getElementById('tool-geiger');
+    if (geigerCloseBtn && geigerToolBtn) {
+      geigerCloseBtn.addEventListener('click', () => {
+        toggleTool('geiger', geigerToolBtn);
       });
     }
 }

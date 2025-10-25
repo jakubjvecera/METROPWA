@@ -12,9 +12,9 @@ const EPICENTER = {
 // Zóny radiace: poloměr v metrech a interval pípání v milisekundách
 // Logika je nyní obrácená: čím dál od epicentra, tím vyšší radiace.
 const ZONES = [
-  { minDistance: 1000, interval: 300, level: "Extrémní" }, // > 1000m od epicentra
-  { minDistance: 300, interval: 800, level: "Vysoká" },   // > 300m
-  { minDistance: 100, interval: 2000, level: "Zvýšená" }, // > 100m (bezpečná zóna je 0-100m)
+  { minDistance: 1000, interval: 300, level: "Extrémní", radiation: () => 50 + Math.random() * 20 }, // > 1000m
+  { minDistance: 300, interval: 800, level: "Vysoká", radiation: () => 10 + Math.random() * 5 },    // > 300m
+  { minDistance: 100, interval: 2000, level: "Zvýšená", radiation: () => 1 + Math.random() * 2 },   // > 100m
 ].sort((a, b) => b.minDistance - a.minDistance); // Seřadíme od největší vzdálenosti
 
 // --- Audio ---
@@ -28,6 +28,8 @@ let exposureTimes = { "Extrémní": 0, "Vysoká": 0, "Zvýšená": 0 };
 let lastUpdateTime = null;
 let currentZoneLevel = null;
 
+let geigerLogList = null; // Inicializujeme jako null
+let geigerLog = []; // Log může zůstat jako prázdné pole
 const geigerIndicator = document.getElementById('geiger-indicator');
 
 // Načtení zvuku pípnutí
@@ -55,6 +57,22 @@ function playTick() {
   source.start(0);
 }
 
+function renderGeigerLog() {
+  if (!geigerLogList) return;
+  geigerLogList.innerHTML = '';
+  geigerLog.slice().reverse().forEach(entry => {
+    const li = document.createElement('li');
+    const time = new Date(entry.t).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    li.innerHTML = `[${time}] Úroveň radiace: <strong>${entry.value.toFixed(2)} µSv/h</strong> (${entry.level})`;
+    geigerLogList.appendChild(li);
+  });
+}
+
+function addGeigerLogEntry(value, level) {
+  geigerLog.unshift({ value, level, t: Date.now() });
+  if (geigerLog.length > 50) geigerLog.pop(); // Udržujeme max 50 záznamů
+}
+
 function updateExposure(newZoneLevel) {
   const now = Date.now();
   if (lastUpdateTime && currentZoneLevel) {
@@ -72,6 +90,14 @@ function updateExposure(newZoneLevel) {
   });
 }
 
+function handleTick(zone) {
+  playTick();
+  const radiationValue = zone.radiation();
+  addGeigerLogEntry(radiationValue, zone.level);
+  renderGeigerLog();
+}
+
+
 function updateTicking(distance) {
   clearInterval(tickTimer);
   tickTimer = null;
@@ -87,15 +113,17 @@ function updateTicking(distance) {
 
   if (currentZone) {
     updateExposure(currentZone.level);
-    setStatus(`Radiace: ${currentZone.level}`);
-    tickTimer = setInterval(playTick, currentZone.interval);
+    setStatus(`Radiace: ${currentZone.level} | Vzdálenost: ${distance.toFixed(0)} m`);
+    tickTimer = setInterval(() => handleTick(currentZone), currentZone.interval);
+    handleTick(currentZone); // První pípnutí a záznam ihned
     if (geigerIndicator) {
       geigerIndicator.style.animationDuration = `${currentZone.interval * 2}ms`;
       geigerIndicator.classList.add('active');
     }
   } else {
     updateExposure(null); // Uživatel není v žádné zóně
-    setStatus('Radiace: V normě');
+    setStatus(`Radiace: V normě | Vzdálenost: ${distance.toFixed(0)} m`);
+    renderGeigerLog(); // Vykreslí prázdný log nebo poslední záznamy
   }
 }
 
@@ -140,6 +168,7 @@ export async function initGeiger() {
     setStatus('Chyba: Geolokace není podporována.');
     return;
   }
+  geigerLogList = document.getElementById('geiger-log-list'); // Získáme prvek až zde
   exposureTimes = loadJSON(EXPOSURE_KEY, { "Extrémní": 0, "Vysoká": 0, "Zvýšená": 0 });
   await setupAudio();
 }
@@ -181,6 +210,7 @@ export function stopGeiger() {
   tickTimer = null;
   if (geigerIndicator) geigerIndicator.classList.remove('active');
   setStatus('Geigerův počítač vypnut.');
+  geigerLog = []; // Vyčistíme log při vypnutí
 }
 
 /**
