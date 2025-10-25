@@ -4,7 +4,7 @@ import {addBattery} from '../../resources.js';
 import {deactivateToolEffect} from '../../tools.js';
 
 let timer = null;
-let timeLeft = 40;
+let timeLeft = 30;
 const LS_KEY = 'flashlightTimeLeft';
 const batteryReplaceBtn = document.getElementById('battery-replace');
 
@@ -16,7 +16,7 @@ export function hideBatteryReplaceButton() {
 }
 
 // Upravená aktivace: pokud není explicitně požadován nový čas, použije čas z úložiště
-export function activate(defaultDuration = 40, forceNewTime = false) {
+export function activate(defaultDuration = 30, forceNewTime = false) {
   if (forceNewTime) {
     timeLeft = defaultDuration;
   } else {
@@ -35,7 +35,7 @@ export function activate(defaultDuration = 40, forceNewTime = false) {
   timer = setInterval(() => {
     timeLeft--;
     save(LS_KEY, timeLeft);
-    if (timeLeft <= 10) {
+    if (timeLeft <= 5) {
       document.getElementById('flashlight-overlay').classList.add('dim');
     }
     if (timeLeft <= 0) {
@@ -57,7 +57,7 @@ export function deactivate() {
 }
 
 export function getTimeLeft() {
-  return load(LS_KEY, 40);
+  return load(LS_KEY, 30);
 }
 export function addTime(timeToAdd) {
   let current = load(LS_KEY, 0);
