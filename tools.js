@@ -16,6 +16,13 @@ const filterReplaceBtn = document.getElementById('filter-replace');
 const batteryReplaceBtn = document.getElementById('battery-replace');
 const appElement = document.getElementById('app');
 
+/**
+ * Zjistí, zda je nástroj s daným ID aktivní.
+ * @param {string} toolId - ID nástroje ('gas-mask', 'radio', atd.)
+ * @returns {boolean}
+ */
+export const isToolActive = (toolId) => activeTools.includes(toolId);
+
 function toggleTool(toolId, btn) {
   // Zabrání současné aktivaci nástrojů, které mají vlastní overlay
   const overlayTools = ['radio', 'geiger'];

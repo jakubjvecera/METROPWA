@@ -3,7 +3,7 @@ import { renderHistory, setStatus, updateResourcesPanel } from './console.js';
 import { loadResources, resetResources, addBattery } from './resources.js';
 import { resetHistory } from './history.js';
 import { initTools } from './tools.js';
-import { initGeiger } from './geiger.js';
+import { initGeiger, resetExposure } from './geiger.js';
 import { loadRadioDB, isRadioCode, processRadioCode } from './src/mechanics/radio.js';
 
 const form = document.getElementById('code-form');
@@ -28,6 +28,13 @@ form.addEventListener('submit', e => {
     updateResourcesPanel();
  
     setStatus('Lokální paměť byla vymazána.');
+    input.value = '';
+    return;
+  }
+
+  // Kód pro reset radiace
+  if (code === 'DECON') {
+    resetExposure();
     input.value = '';
     return;
   }
