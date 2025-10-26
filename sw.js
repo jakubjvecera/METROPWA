@@ -25,11 +25,14 @@ const URLS_TO_CACHE = [
   // Moduly v podadresářích
   'src/mechanics/flashlight.js',
   'src/mechanics/radio.js',
+  'src/mechanics/gasmask.js',
 
   // Datové soubory a assety
   'codes-db.json',
   'radio-messages.json',
-  'assets/geiger-tick.wav', // assets/radio-static.mp3 byl odebrán, protože se nepoužívá
+  'assets/geiger-tick.wav', 
+  'assets/radio-static.mp3',
+  'assets/gas-mask-overley.png',
 
   // Ikony
   'icon-192.png',
