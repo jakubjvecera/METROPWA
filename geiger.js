@@ -29,6 +29,7 @@ let lastUpdateTime = null;
 let currentZoneLevel = null;
 let isGeigerUiActive = false; // Nová proměnná pro sledování stavu UI
 let activeZoneLevel = null; // Sleduje, pro jakou zónu je aktivní pípání
+let lastKnownDistance = null; // Uložíme si poslední známou vzdálenost
 
 let geigerLogList = null; // Inicializujeme jako null
 let geigerLog = []; // Log může zůstat jako prázdné pole
@@ -178,10 +179,20 @@ function getDistance(lat1, lon1, lat2, lon2) {
   return R * c;
 }
 
+function forceTickUpdate() {
+  if (lastKnownDistance !== null) {
+    // Použijeme poslední známou vzdálenost k okamžité aktualizaci UI
+    updateTicking(lastKnownDistance);
+  }
+}
+
 function onPositionUpdate(position) {
   const { latitude, longitude, accuracy } = position.coords;
   const distance = getDistance(latitude, longitude, EPICENTER.latitude, EPICENTER.longitude);
+  lastKnownDistance = distance; // Uložíme si vzdálenost pro budoucí použití
   console.log(`Vzdálenost: ${distance.toFixed(1)} m | Přesnost GPS: ±${accuracy.toFixed(1)} m`);
+
+  // Pokud je UI aktivní, aktualizujeme ho. Výpočet expozice se děje uvnitř.
   updateTicking(distance);
 }
 
@@ -217,6 +228,7 @@ export async function initGeiger() {
 export function startGeiger() {
   if (isGeigerUiActive) return; // UI již běží
   isGeigerUiActive = true;
+  activeZoneLevel = null; // KLÍČOVÁ OPRAVA: Resetujeme stav pípání při každém zapnutí
   setStatus('Vyhledávám GPS signál...');
 
   // Při každém zapnutí se pokusíme "probudit" audio kontext.
@@ -231,6 +243,9 @@ export function startGeiger() {
   if (appElement) {
     appElement.classList.add('geiger-active');
   }
+
+  // Okamžitě zkusíme aktualizovat pípání s poslední známou polohou
+  forceTickUpdate();
 }
 
 /**
