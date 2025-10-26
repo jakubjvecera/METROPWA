@@ -6,7 +6,6 @@ import { renderRadioMessages } from './src/mechanics/radio.js';
 
 
 const tools = [
-  { id: 'flashlight', label: '🔦', title: 'Svítilna' },
   { id: 'gas-mask', label: '😷', title: 'Plynová maska' },
   { id: 'geiger', label: '☢️', title: 'Geiger' },
   { id: 'radio', label: '📻', title: 'Vysílačka' },

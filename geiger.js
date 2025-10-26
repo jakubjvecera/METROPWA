@@ -29,7 +29,7 @@ let currentZoneLevel = null;
 
 let geigerLogList = null; // Inicializujeme jako null
 let geigerLog = []; // Log může zůstat jako prázdné pole
-const geigerIndicator = document.getElementById('geiger-indicator');
+// const geigerIndicator = document.getElementById('geiger-indicator');
 const appElement = document.getElementById('app');
 const geigerValueElement = document.getElementById('geiger-value');
 const geigerBlinkIndicator = document.querySelector('.geiger-blink-indicator');
@@ -119,10 +119,10 @@ function updateTicking(distance) {
   tickTimer = null;
 
   // Reset stylu indikátoru
-  if (geigerIndicator) {
-    geigerIndicator.style.animationDuration = '';
-    geigerIndicator.classList.remove('active');
-  }
+  // if (geigerIndicator) {
+  //   geigerIndicator.style.animationDuration = '';
+  //   geigerIndicator.classList.remove('active');
+  // }
 
   // Najde první zónu, jejíž minimální vzdálenost je menší než aktuální vzdálenost hráče
   const currentZone = ZONES.find(zone => distance > zone.minDistance);
@@ -132,10 +132,10 @@ function updateTicking(distance) {
     setStatus(`Radiace: ${currentZone.level} | Vzdálenost: ${distance.toFixed(0)} m`);
     tickTimer = setInterval(() => handleTick(currentZone), currentZone.interval);
     handleTick(currentZone); // První pípnutí a záznam ihned
-    if (geigerIndicator) {
-      geigerIndicator.style.animationDuration = `${currentZone.interval * 2}ms`;
-      geigerIndicator.classList.add('active');
-    }
+    // if (geigerIndicator) {
+    //   geigerIndicator.style.animationDuration = `${currentZone.interval * 2}ms`;
+    //   geigerIndicator.classList.add('active');
+    // }
   } else {
     updateExposure(null); // Uživatel není v žádné zóně
     setStatus(`Radiace: V normě | Vzdálenost: ${distance.toFixed(0)} m`);
@@ -199,12 +199,16 @@ export function startGeiger() {
   setStatus('Vyhledávám GPS signál...');
   lastUpdateTime = Date.now();
 
-  // Aktivace audia při první interakci
-  if (audioContext && audioContext.state === 'suspended') {
-    audioContext.resume();
+  // Při každém zapnutí se pokusíme "probudit" audio kontext.
+  // To řeší problém, kdy prohlížeč (hlavně na mobilech) audio po nečinnosti uspí.
+  if (audioContext) {
+    if (audioContext.state === 'suspended') {
+      audioContext.resume();
+    }
+    playTick(); // Přehráním tichého (nebo prvního) pípnutí se kontext spolehlivě aktivuje.
   }
 
-  if (geigerIndicator) geigerIndicator.classList.add('active');
+  // if (geigerIndicator) geigerIndicator.classList.add('active');
 
   if (appElement) {
     appElement.classList.add('geiger-active');
@@ -231,7 +235,7 @@ export function stopGeiger() {
   watchId = null;
   clearInterval(tickTimer);
   tickTimer = null;
-  if (geigerIndicator) geigerIndicator.classList.remove('active');
+  // if (geigerIndicator) geigerIndicator.classList.remove('active');
   setStatus('Geigerův počítač vypnut.');
 
   if (appElement) {
