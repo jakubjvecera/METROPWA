@@ -297,28 +297,6 @@
   #geiger-overlay.active {
     display: flex;
   }
-  .geiger-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    color: var(--green);
-    padding-bottom: 8px;
-    border-bottom: 1px solid var(--green);
-    margin-bottom: 20px;
-    font-size: 14px;
-  }
-  #geiger-close-btn {
-    background: none;
-    border: 1px solid var(--accent);
-    color: var(--accent);
-    font-size: 20px;
-    line-height: 1;
-    padding: 0 6px;
-    cursor: pointer;
-  }
-  #geiger-log-list {
-    list-style: none; padding: 0; margin: 0; color: var(--green); font-size: 15px; overflow-y: auto; flex-grow: 1;
-  }
   #geiger-log-list li { padding: 2px 0; }
 
   #geiger-display {
@@ -332,6 +310,7 @@
     font-family: 'Orbitron', var(--mono); /* Pro digitální vzhled, pokud je dostupná */
     box-shadow: inset 0 0 15px rgba(0, 255, 102, 0.2);
     position: relative;
+    width: 300px; /* Pevná šířka pro konzistentní vzhled */
   }
   #geiger-value {
     font-size: 48px;
@@ -383,6 +362,9 @@
   <!-- efekt plynové masky -->
   <div id="gas-mask-overlay"></div>
 
+  <!-- efekt kompasu -->
+  <div id="compass-overlay"></div>
+
   <!-- Okno vysílačky -->
   <div id="radio-overlay">
     <div class="radio-header">
@@ -394,11 +376,6 @@
 
   <!-- Okno Geigerova počítače -->
   <div id="geiger-overlay">
-    <div class="geiger-header">
-      <span>GEIGER-MÜLLERŮV POČÍTAČ</span>
-      <button id="geiger-close-btn">&times;</button>
-    </div>
-    <ul id="geiger-log-list"></ul>
     <div id="geiger-display">
       <div class="geiger-blink-indicator"></div>
       <span id="geiger-value">0.00</span>
