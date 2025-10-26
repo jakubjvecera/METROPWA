@@ -1,4 +1,5 @@
 import { activate as flashlightOn, deactivate as flashlightOff, showBatteryReplaceButton, hideBatteryReplaceButton, batteryReplace} from './src/mechanics/flashlight.js';
+import { activate as gasmaskOn, deactivate as gasmaskOff, showFilterReplaceButton, hideFilterReplaceButton, filterReplace } from './src/mechanics/gasmask.js';
 import { loadJSON as load } from './storage.js';
 import { startGeiger, stopGeiger } from './geiger.js';
 import { renderRadioMessages } from './src/mechanics/radio.js';
@@ -6,10 +7,15 @@ import { renderRadioMessages } from './src/mechanics/radio.js';
 
 const tools = [
   { id: 'flashlight', label: '🔦', title: 'Svítilna' },
+  { id: 'gas-mask', label: '😷', title: 'Plynová maska' },
+  { id: 'geiger', label: '☢️', title: 'Geiger' },
+  { id: 'radio', label: '📻', title: 'Vysílačka' },
 ];
 
 let activeTools = [];
+const filterReplaceBtn = document.getElementById('filter-replace');
 const batteryReplaceBtn = document.getElementById('battery-replace');
+const appElement = document.getElementById('app');
 
 function toggleTool(toolId, btn) {
   // Zabrání současné aktivaci nástrojů, které mají vlastní overlay
@@ -50,7 +56,14 @@ function activateToolEffect(toolId, btn) {
       renderRadioMessages();
       break;
     case 'gas-mask':
-      console.log('Maska aktivována');
+      let filterTimeLeft = load("gasmaskTimeLeft", 120);
+      if (filterTimeLeft > 0) {
+        gasmaskOn();
+      } else {
+        btn.classList.remove('active');
+        activeTools = activeTools.filter(id => id !== 'gas-mask');
+        showFilterReplaceButton();
+      }
       break;
     case 'geiger':
       startGeiger();
@@ -72,10 +85,13 @@ export function deactivateToolEffect(toolId) {
       document.getElementById('radio-overlay').classList.remove('active');
       break;
     case 'gas-mask':
-      console.log('Maska deaktivována');
+      gasmaskOff();
+      const gasmaskBtn = document.getElementById('tool-gas-mask');
+      if (gasmaskBtn) gasmaskBtn.classList.remove('active');
+      activeTools = activeTools.filter(id => id !== 'gas-mask');
       break;
     case 'geiger':
-      stopGeiger();
+      stopGeiger(); // Toto je klíčová oprava: zastaví logiku Geigeru
       document.getElementById('geiger-overlay').classList.remove('active');
       break;
   }
@@ -101,6 +117,10 @@ export function initTools() {
     batteryReplaceBtn.addEventListener('click', () => {
       batteryReplace();
     });
+    filterReplaceBtn.addEventListener('click', () => {
+      filterReplace();
+    });
+
 
     const radioCloseBtn = document.getElementById('radio-close-btn');
     const radioToolBtn = document.getElementById('tool-radio');
@@ -118,4 +138,3 @@ export function initTools() {
       });
     }
 }
-

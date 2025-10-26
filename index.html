@@ -15,7 +15,7 @@
     --panel:#0e0e0e;
     --accent:#8b0000;
     --green:#00ff66;
-    --text:#d8d8d8;
+    --text:#5f5b5b;
     --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono", "Courier New", monospace;
   }
   *{box-sizing:border-box}
@@ -128,6 +128,18 @@
     font-size:14px;
   }
   .resources span{color:var(--green);}
+  .resources, #code-form {
+    transition: all 0.3s ease-in-out;
+    overflow: hidden;
+  }
+  #app.geiger-active .resources,
+  #app.geiger-active #code-form {
+    height: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+    border-width: 0;
+    visibility: hidden;
+  }
   /* formulář pro kódy */
   #code-form{
     display:flex;
@@ -174,6 +186,39 @@
   }
   /* tlačítko výměny baterie */
   #battery-replace {
+    position: absolute;
+    top: 56px;
+    left: 0;
+    width: 100%;
+    padding: 12px;
+    background: var(--accent);
+    color: #fff;
+    font-size: 18px;
+    font-weight: bold;
+    text-align: center;
+    cursor: pointer;
+    display: none;
+    z-index: 1000;
+  }
+  /* efekt plynové masky */
+  #gas-mask-overlay {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 50%;
+    height: 50%;
+    background: url('assets/gas-mask-overlay.png') no-repeat center center;
+    background-size: cover;
+    pointer-events: none;
+    display: none;
+    z-index: 999;
+  }
+  #gas-mask-overlay.active {
+    display: block;
+  }
+  /* tlačítko výměny filtru */
+  #filter-replace {
     position: absolute;
     top: 56px;
     left: 0;
@@ -275,6 +320,40 @@
     list-style: none; padding: 0; margin: 0; color: var(--green); font-size: 15px; overflow-y: auto; flex-grow: 1;
   }
   #geiger-log-list li { padding: 2px 0; }
+
+  #geiger-display {
+    flex-shrink: 0;
+    background: #0a0a0a;
+    border: 2px solid var(--green);
+    border-radius: 4px;
+    padding: 15px 20px;
+    margin-top: 10px;
+    text-align: center;
+    font-family: 'Orbitron', var(--mono); /* Pro digitální vzhled, pokud je dostupná */
+    box-shadow: inset 0 0 15px rgba(0, 255, 102, 0.2);
+    position: relative;
+  }
+  #geiger-value {
+    font-size: 48px;
+    color: var(--green);
+    letter-spacing: 3px;
+    text-shadow: 0 0 8px var(--green);
+  }
+  .geiger-display-unit {
+    font-size: 18px;
+    color: var(--green);
+    margin-left: 10px;
+  }
+  .geiger-blink-indicator {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 10px;
+    height: 10px;
+    background: var(--green);
+    border-radius: 50%;
+    opacity: 0;
+  }
 </style>
 </head>
 <body>
@@ -287,6 +366,8 @@
   </header>
 
   <div id="battery-replace">Svítilna: vyměnit baterie</div>
+  <div id="filter-replace">Maska: vyměnit filtr</div>
+
 
   <section id="center">
     <div class="big-title">Метро 2033</div>
@@ -298,6 +379,9 @@
 
   <!-- efekt svítilny -->
   <div id="flashlight-overlay"></div>
+
+  <!-- efekt plynové masky -->
+  <div id="gas-mask-overlay"></div>
 
   <!-- Okno vysílačky -->
   <div id="radio-overlay">
@@ -315,6 +399,11 @@
       <button id="geiger-close-btn">&times;</button>
     </div>
     <ul id="geiger-log-list"></ul>
+    <div id="geiger-display">
+      <div class="geiger-blink-indicator"></div>
+      <span id="geiger-value">0.00</span>
+      <span class="geiger-display-unit">µSv/h</span>
+    </div>
   </div>
 
   <div class="resources">

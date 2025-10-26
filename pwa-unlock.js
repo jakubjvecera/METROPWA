@@ -2,7 +2,7 @@
 // Tento skript odemyká webová API, která vyžadují interakci uživatele (např. na iOS).
 // Spouští se jednou při prvním kliknutí nebo dotyku na stránce.
 (() => {
-    let unlocked = false;
+    let unlocked = false; // Zůstává privátní
     // Používáme `const` pro AudioContext, protože ho vytvoříme jen jednou.
     const AudioContext = window.AudioContext || window.webkitAudioContext;
     let audioContextInstance;
@@ -11,7 +11,7 @@
      * Odemkne Web Audio API.
      * Vytvoří AudioContext a přehraje tichý zvuk, aby ho aktivoval.
      */
-    function unlockAudio() {
+    function unlockAudio() { // Zůstává privátní
         if (!AudioContext || audioContextInstance) return;
 
         try {
@@ -32,6 +32,19 @@
             console.error("Web Audio API není podporováno nebo selhalo.", e);
         }
     }
+
+    /**
+     * Globální funkce pro získání instance AudioContext.
+     * Pokud instance neexistuje, vytvoří se.
+     * @returns {AudioContext|null}
+     */
+    window.getAudioContext = () => {
+        // Pokud instance neexistuje, vytvoříme ji.
+        if (!audioContextInstance && AudioContext) {
+            audioContextInstance = new AudioContext();
+        }
+        return audioContextInstance; // Vrátíme existující nebo nově vytvořenou instanci.
+    };
 
     /** Odemkne Vibration API. */
     function unlockVibration() {
