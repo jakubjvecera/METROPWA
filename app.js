@@ -1,9 +1,10 @@
 import { loadCodesDB, isValidCode, processCode } from './codes.js';
 import { renderHistory, setStatus, updateResourcesPanel } from './console.js';
+import { saveJSON } from './storage.js';
 import { loadResources, resetResources, addBattery } from './resources.js';
 import { resetHistory } from './history.js';
-import { initTools } from './tools.js';
-import { initGeiger, resetExposure } from './geiger.js';
+import { initTools, isToolActive } from './tools.js';
+import { initGeiger, resetExposure, getExposureTimes } from './geiger.js';
 import { loadRadioDB, isRadioCode, processRadioCode } from './src/mechanics/radio.js';
 
 const form = document.getElementById('code-form');
@@ -35,6 +36,24 @@ form.addEventListener('submit', e => {
   // Kód pro reset radiace
   if (code === 'DECON') {
     resetExposure();
+    input.value = '';
+    return;
+  }
+
+  // Kód pro získání speciálního obleku
+  if (code === 'OB1234') {
+    saveJSON('metro_suit_status', { active: true });
+    setStatus('Získán speciální protiradiační oblek.');
+    input.value = '';
+    return;
+  }
+
+  // Kód pro výpis času expozice
+  if (code === 'AZ0000') {
+    const exposure = getExposureTimes();
+    const highTime = (exposure['Vysoká'] / 1000).toFixed(0);
+    const mediumTime = (exposure['Zvýšená'] / 1000).toFixed(0);
+    setStatus(`Expozice: Vysoká: ${highTime}s, Zvýšená: ${mediumTime}s`);
     input.value = '';
     return;
   }

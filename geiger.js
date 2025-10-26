@@ -89,7 +89,20 @@ function updateExposure(newZoneLevel) {
   // vypočítáme čas strávený v této zóně.
   if (lastUpdateTime && currentZoneLevel) { // Pokud jsme byli v zóně
     // A POKUD NENÍ AKTIVNÍ PLYNOVÁ MASKA...
-    if (!isToolActive('gas-mask')) {
+    let shouldCountExposure = true; // Standardně expozici počítáme
+
+    if (currentZoneLevel === "Vysoká") {
+      // Ve VYSOKÉ zóně je potřeba maska I oblek
+      const suitStatus = loadJSON('metro_suit_status', { active: false });
+      if (isToolActive('gas-mask') && suitStatus.active) {
+        shouldCountExposure = false;
+      }
+    } else if (isToolActive('gas-mask')) {
+      // V ostatních zónách stačí maska
+      shouldCountExposure = false;
+    }
+
+    if (shouldCountExposure) {
       const timeSpent = now - lastUpdateTime; // v milisekundách
       exposureTimes[currentZoneLevel] = (exposureTimes[currentZoneLevel] || 0) + timeSpent;
     }

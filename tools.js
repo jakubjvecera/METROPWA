@@ -8,7 +8,6 @@ import { renderRadioMessages } from './src/mechanics/radio.js';
 const tools = [
   { id: 'gas-mask', label: '😷', title: 'Plynová maska' },
   { id: 'geiger', label: '☢️', title: 'Geiger' },
-  { id: 'radio', label: '📻', title: 'Vysílačka' },
 ];
 
 let activeTools = [];
