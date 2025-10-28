@@ -1,6 +1,7 @@
 import { saveJSON, loadJSON } from '../../storage.js';
 import { setStatus } from '../../console.js';
 
+import { unlockPwaFeatures } from '../../pwa-unlock.js'; // Importujeme funkci pro odemknutí PWA funkcí
 const USED_RADIO_CODES_KEY = 'metro_used_radio_codes';
 const RADIO_MESSAGES_KEY = 'metro_radio_messages';
 let radioMessages = [];
@@ -83,6 +84,7 @@ function deliverMessage(messageData) {
     if (!messageContent) {
       messageContent = `Příchozí zvukový přenos...`;
     }
+    unlockPwaFeatures(); // Znovu aktivujeme audio kontext těsně před přehráváním
     // Zastavíme jakýkoli aktuálně přehrávaný zvuk
     if (audioPlayer) {
       audioPlayer.pause();

@@ -61,7 +61,7 @@ form.addEventListener('submit', e => {
 */
   if (isRadioCode(code)) {
     if (processRadioCode(code)) {
-      unlockPwaFeatures(); // Znovu aktivujeme audio kontext
+      //unlockPwaFeatures(); // Znovu aktivujeme audio kontext
       input.value = '';
     }
     return;

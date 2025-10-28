@@ -2,7 +2,7 @@
 
 // Název cache a verze. Změnou verze se při aktualizaci service workeru
 // stará cache smaže a vytvoří se nová s aktuálními soubory.
-const CACHE_NAME = 'metro-terminal-v4';
+const CACHE_NAME = 'metro-terminal-v5';
 
 // Seznam souborů, které chceme uložit do mezipaměti pro offline použití.
 const URLS_TO_CACHE = [
