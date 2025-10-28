@@ -5,7 +5,7 @@ import { loadResources, resetResources, addBattery } from './resources.js';
 import { resetHistory } from './history.js';
 import { initTools, isToolActive, activateRadioPermanently } from './tools.js';
 import { initGeiger, resetExposure, getExposureTimes } from './geiger.js';
-import { loadRadioDB, isRadioCode, processRadioCode } from './src/mechanics/radio.js';
+import { loadRadioDB, isRadioCode, processRadioCode, addRadioSystemMessage } from './src/mechanics/radio.js';
 import { unlockPwaFeatures } from './pwa-unlock.js';
 
 const form = document.getElementById('code-form');
@@ -34,12 +34,12 @@ form.addEventListener('submit', e => {
     return;
   }
 
-  // Kód pro reset radiace
+  /*// Kód pro reset radiace
   if (code === 'DECON') {
     resetExposure();
     input.value = '';
     return;
-  }
+  }*/
 
   // Kód pro získání speciálního obleku
  /* if (code === 'OB1234') {
@@ -80,6 +80,16 @@ form.addEventListener('submit', e => {
   }
   input.focus();
 });
+
+// Naslouchání zpráv od Service Workeru
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.addEventListener('message', event => {
+    // Zkontrolujeme, zda zpráva má správný typ
+    if (event.data && event.data.type === 'CACHE_COMPLETE') {
+      addRadioSystemMessage('Systém', 'test');
+    }
+  });
+}
 
 (async () => {
   await loadCodesDB();

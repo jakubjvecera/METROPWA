@@ -46,11 +46,11 @@ export function processRadioCode(code) {
     return false;
   }
 
-  // const usedCodes = loadJSON(USED_RADIO_CODES_KEY, []);
-  // if (usedCodes.includes(code)) {
-  //   setStatus('Tento signál již byl zachycen.');
-  //   return false;
-  // }
+  const usedCodes = loadJSON(USED_RADIO_CODES_KEY, []);
+  if (usedCodes.includes(code)) {
+    setStatus('Tento signál již byl zachycen.');
+    return false;
+  }
 
   setStatus(`Signál ${code} zachycen. Čekám na zprávu...`);
 
@@ -58,8 +58,8 @@ export function processRadioCode(code) {
     deliverMessage(messageData);
   }, messageData.delay);
 
-  // usedCodes.push(code);
-  // saveJSON(USED_RADIO_CODES_KEY, usedCodes);
+  usedCodes.push(code);
+  saveJSON(USED_RADIO_CODES_KEY, usedCodes);
 
   return true;
 }
@@ -96,6 +96,23 @@ function deliverMessage(messageData) {
     content: messageContent,
     t: Date.now(),
     audio: messageData.audio // Uložíme i cestu ke zvuku
+  };
+  radioMessagesHistory.push(newEntry);
+  saveJSON(RADIO_MESSAGES_KEY, radioMessagesHistory);
+  renderRadioMessages();
+}
+
+/**
+ * Přidá systémovou zprávu do historie vysílačky.
+ * @param {string} title Titulek zprávy.
+ * @param {string} content Obsah zprávy.
+ */
+export function addRadioSystemMessage(title, content) {
+  const newEntry = {
+    title: title,
+    content: content,
+    t: Date.now(),
+    audio: null // Systémové zprávy nemají zvuk
   };
   radioMessagesHistory.push(newEntry);
   saveJSON(RADIO_MESSAGES_KEY, radioMessagesHistory);

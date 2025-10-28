@@ -13,6 +13,7 @@ const URLS_TO_CACHE = [
 
   // Hlavní skripty v kořenovém adresáři
   'app.js',
+
   'codes.js',
   'console.js',
   'geiger.js',
@@ -28,8 +29,6 @@ const URLS_TO_CACHE = [
   // Datové soubory a assety
   'codes-db.json',
   'radio-messages.json',
-  'assets/gas-mask-overlay.png', // Přidán chybějící asset pro masku
-  'assets/geiger-tick.wav', // Přidán zvuk pro Geiger
 
   // Audio soubory pro rádio
   // Cesty opraveny, aby odpovídaly radio-messages.json a struktuře projektu
@@ -51,6 +50,24 @@ self.addEventListener('install', event => {
       .then(cache => {
         console.log('Otevřena cache:', CACHE_NAME);
         return cache.addAll(URLS_TO_CACHE);
+      })
+      .then(() => {
+        // Tento blok se spustí, až když je cache.addAll() úspěšně dokončeno.
+        console.log('Všechny soubory úspěšně uloženy do cache.');
+        // Pošleme zprávu všem klientům (otevřeným oknům aplikace).
+        return self.clients.matchAll({
+          includeUncontrolled: true,
+          type: 'window',
+        });
+      })
+      .then(clients => {
+        if (!clients || clients.length === 0) return;
+        clients.forEach(client => {
+          client.postMessage({
+            type: 'CACHE_COMPLETE',
+            message: 'Všechny soubory staženy a připraveny pro offline použití.'
+          });
+        });
       })
       .catch(err => {
         console.error('Nepodařilo se uložit soubory do cache při instalaci:', err);
