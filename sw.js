@@ -105,32 +105,44 @@ self.addEventListener('activate', event => {
 
 // 3. Zachytávání síťových požadavků (fetch)
 self.addEventListener('fetch', event => {
-  // Strategie: Cache first, s fallbackem na síť a ošetřením chyb.
-  event.respondWith(
-    caches.match(event.request)
-      .then(response => {
-        // Pokud je požadavek v cache, vrátíme ho.
-        if (response) {
-          // console.log(`[SW] Odpovídám z cache: ${event.request.url}`);
-          return response;
-        }
+  const { request } = event;
 
-        // console.log(`[SW] Není v cache, zkouším síť: ${event.request.url}`);
-        // Pokud není v cache, pokusíme se ho stáhnout ze sítě.
-        return fetch(event.request).then(networkResponse => {
-          // Pokud byl požadavek úspěšný, uložíme ho do cache pro příště.
-          if (networkResponse && networkResponse.status === 200) {
-            const responseToCache = networkResponse.clone();
-            caches.open(CACHE_NAME).then(cache => {
-              cache.put(event.request, responseToCache);
-            });
-          }
-          return networkResponse;
-        }).catch(error => {
-          console.error(`[SW] Fetch selhal; požadavek není v cache a síť není dostupná: ${event.request.url}`, error);
-          // Vrátíme generickou chybovou odpověď, aby se předešlo pádu.
-          return new Response('Network error', { status: 408, headers: { 'Content-Type': 'text/plain' } });
-        });
-      })
+  // Strategie pro navigaci (HTML stránky): Network first, s fallbackem na cache.
+  // To zajistí, že uživatel dostane vždy nejnovější verzi, pokud je online.
+  if (request.mode === 'navigate') {
+    event.respondWith(
+      fetch(request)
+        .then(response => {
+          // Pokud je síť dostupná, vrátíme odpověď a uložíme ji do cache.
+          const responseToCache = response.clone();
+          caches.open(CACHE_NAME).then(cache => cache.put(request, responseToCache));
+          return response;
+        })
+        .catch(() => {
+          // Pokud síť selže, vrátíme hlavní stránku z cache.
+          return caches.match('/');
+        })
+    );
+    return;
+  }
+
+  // Strategie pro ostatní požadavky (CSS, JS, obrázky, audio): Cache first.
+  event.respondWith(
+    caches.match(request).then(cachedResponse => {
+      // Pokud je zdroj v cache, vrátíme ho.
+      if (cachedResponse) {
+        return cachedResponse;
+      }
+
+      // Pokud není v cache, zkusíme ho stáhnout ze sítě.
+      return fetch(request).then(networkResponse => {
+        // Uložíme nově stažený zdroj do cache pro příště.
+        const responseToCache = networkResponse.clone();
+        caches.open(CACHE_NAME).then(cache => cache.put(request, responseToCache));
+        return networkResponse;
+      });
+      // Poznámka: Zde záměrně neřešíme .catch(). Pokud selže síť i cache,
+      // prohlížeč vyvolá standardní síťovou chybu, což je pro tyto zdroje v pořádku.
+    })
   );
 });
