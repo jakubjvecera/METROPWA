@@ -119,6 +119,30 @@ function updateExposure(newZoneLevel) {
   });
 }
 
+/*function checkRadiationSickness() {
+  const totalExposure = (exposureTimes["Vysoká"] || 0) + (exposureTimes["Zvýšená"] || 0);
+
+  // 60 sekund = 60000 milisekund
+  if (totalExposure > 60000) {
+    let sicknessOverlay = document.getElementById('radiation-sickness-overlay');
+    if (!sicknessOverlay) {
+      sicknessOverlay = document.createElement('div');
+      sicknessOverlay.id = 'radiation-sickness-overlay';
+      sicknessOverlay.textContent = 'NEMOC Z OZÁŘENÍ';
+      Object.assign(sicknessOverlay.style, {
+        position: 'fixed',
+        top: '0', left: '0',
+        width: '100vw', height: '100vh',
+        backgroundColor: 'rgba(0, 0, 0, 0.85)',
+        color: 'red',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        fontSize: '5vw', fontWeight: 'bold', zIndex: '10000',
+      });
+      document.body.appendChild(sicknessOverlay);
+    }
+  }
+}*/
+
 function handleTick(zone) {
   playTick();
   const radiationValue = zone.radiation();
@@ -145,6 +169,9 @@ function updateTicking(distance) {
 
   // Výpočet expozice běží vždy na pozadí
   updateExposure(currentZone ? currentZone.level : null);
+
+  // Zkontrolujeme, zda hráč nemá nemoc z ozáření
+  //checkRadiationSickness();
 
   const newZoneLevel = currentZone ? currentZone.level : null;
 

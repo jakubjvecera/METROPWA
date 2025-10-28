@@ -140,6 +140,8 @@
     border-width: 0;
     visibility: hidden;
   }
+  /* #app.radio-active #center { display: none; }  <- TOTO ODSTRANÍME */
+
   /* formulář pro kódy */
   #code-form{
     display:flex;
@@ -235,20 +237,21 @@
   }
   /* Efekt a okno vysílačky */
   #radio-overlay {
-    position: fixed;
-    top: 56px;
+    position: absolute; /* Změna na absolute, aby se vztahovalo k #app */
+    top: 54px; /* Hned pod horní lištou */
     left: 0;
     right: 0;
-    bottom: 0;
-    background: rgba(5, 5, 5, 0.95);
+    bottom: 68px; /* Ponecháme místo pro .resources (cca 35px) a #code-form (cca 60px) */
+    background: var(--panel); /* Neprůhledné pozadí */
     z-index: 998;
     display: none; /* Skryto ve výchozím stavu */
     flex-direction: column;
     padding: 10px;
-    border-top: 2px solid var(--accent);
+    border-top: 3px solid var(--accent);    
   }
   #radio-overlay.active {
-    display: flex;
+    display: block; /* Změna na block, aby se prvky řadily pod sebe */
+    display: flex; /* Změna na flex, aby fungovalo scrollování */
   }
   .radio-header {
     display: flex;
@@ -265,7 +268,7 @@
     border: 1px solid var(--accent);
     color: var(--accent);
     font-size: 20px;
-    line-height: 1;
+    display: none; /* Skryjeme křížek */
     padding: 0 6px;
     cursor: pointer;
   }
@@ -277,6 +280,12 @@
     font-size: 15px;
     overflow-y: auto;
     flex-grow: 1;
+    /* Skrytí scrollbaru při zachování funkčnosti */
+    -ms-overflow-style: none;  /* IE a Edge */
+    scrollbar-width: none;  /* Firefox */
+  }
+  #radio-messages-list::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Opera */
   }
 
   /* Efekt a okno Geigerova počítače */

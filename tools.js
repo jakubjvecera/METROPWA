@@ -6,8 +6,7 @@ import { renderRadioMessages } from './src/mechanics/radio.js';
 
 
 const tools = [
-  { id: 'gas-mask', label: '😷', title: 'Plynová maska' },
-  { id: 'geiger', label: '☢️', title: 'Geiger' },
+  // { id: 'radio', label: '📻', title: 'Vysílačka' } // Dočasně skryto
 ];
 
 let activeTools = [];
@@ -57,6 +56,7 @@ function activateToolEffect(toolId, btn) {
       }
       break;
     case 'radio':
+      appElement.classList.add('radio-active');
       document.getElementById('radio-overlay').classList.add('active');
       renderRadioMessages();
       break;
@@ -87,6 +87,7 @@ export function deactivateToolEffect(toolId) {
       activeTools = activeTools.filter(id => id !== 'flashlight');
       break;
     case 'radio':
+      appElement.classList.remove('radio-active');
       document.getElementById('radio-overlay').classList.remove('active');
       break;
     case 'gas-mask':
@@ -100,6 +101,17 @@ export function deactivateToolEffect(toolId) {
       document.getElementById('geiger-overlay').classList.remove('active');
       break;
   }
+}
+
+/**
+ * Trvale aktivuje rádio.
+ */
+export function activateRadioPermanently() {
+  if (isToolActive('radio')) return;
+  activeTools.push('radio');
+  appElement.classList.add('radio-active');
+  document.getElementById('radio-overlay').classList.add('active');
+  renderRadioMessages();
 }
 
 export function initTools() {
@@ -129,11 +141,11 @@ export function initTools() {
 
     const radioCloseBtn = document.getElementById('radio-close-btn');
     const radioToolBtn = document.getElementById('tool-radio');
-    if (radioCloseBtn && radioToolBtn) {
-      radioCloseBtn.addEventListener('click', () => {
-        toggleTool('radio', radioToolBtn);
-      });
-    }
+    // if (radioCloseBtn && radioToolBtn) {
+    //   radioCloseBtn.addEventListener('click', () => {
+    //     toggleTool('radio', radioToolBtn);
+    //   });
+    // }
 
     const geigerCloseBtn = document.getElementById('geiger-close-btn');
     const geigerToolBtn = document.getElementById('tool-geiger');

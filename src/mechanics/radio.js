@@ -46,11 +46,11 @@ export function processRadioCode(code) {
     return false;
   }
 
-  const usedCodes = loadJSON(USED_RADIO_CODES_KEY, []);
-  if (usedCodes.includes(code)) {
-    setStatus('Tento signál již byl zachycen.');
-    return false;
-  }
+  // const usedCodes = loadJSON(USED_RADIO_CODES_KEY, []);
+  // if (usedCodes.includes(code)) {
+  //   setStatus('Tento signál již byl zachycen.');
+  //   return false;
+  // }
 
   setStatus(`Signál ${code} zachycen. Čekám na zprávu...`);
 
@@ -58,8 +58,8 @@ export function processRadioCode(code) {
     deliverMessage(messageData);
   }, messageData.delay);
 
-  usedCodes.push(code);
-  saveJSON(USED_RADIO_CODES_KEY, usedCodes);
+  // usedCodes.push(code);
+  // saveJSON(USED_RADIO_CODES_KEY, usedCodes);
 
   return true;
 }
@@ -69,24 +69,37 @@ export function processRadioCode(code) {
  * @param {object} messageData
  */
 function deliverMessage(messageData) {
-  const messageTitle = `[Vysílačka] ${messageData.title}`;
   let messageContent;
 
-  if (messageData.type === 'text') {
-    messageContent = messageData.content;
+  // Zpracování textové části
+  if (messageData.text) {
+    messageContent = messageData.text;
     setStatus('Nová zpráva ve vysílačce!');
-  } else if (messageData.type === 'audio') {
-    messageContent = `Příchozí zvukový přenos...`;
-    audioPlayer = new Audio(messageData.content);
+  }
+
+  // Zpracování zvukové části
+  if (messageData.audio) {
+    // Pokud není žádný text, zobrazíme zástupný text
+    if (!messageContent) {
+      messageContent = `Příchozí zvukový přenos...`;
+    }
+    // Zastavíme jakýkoli aktuálně přehrávaný zvuk
+    if (audioPlayer) {
+      audioPlayer.pause();
+    }
+    audioPlayer = new Audio(messageData.audio);
     audioPlayer.play().catch(e => console.error("Chyba při přehrávání zvuku:", e));
   }
 
-  if (messageContent) {
-    const newEntry = { title: messageData.title, content: messageContent, t: Date.now() };
-    radioMessagesHistory.push(newEntry);
-    saveJSON(RADIO_MESSAGES_KEY, radioMessagesHistory);
-    renderRadioMessages();
-  }
+  const newEntry = {
+    title: messageData.title,
+    content: messageContent,
+    t: Date.now(),
+    audio: messageData.audio // Uložíme i cestu ke zvuku
+  };
+  radioMessagesHistory.push(newEntry);
+  saveJSON(RADIO_MESSAGES_KEY, radioMessagesHistory);
+  renderRadioMessages();
 }
 
 /**
@@ -99,10 +112,30 @@ export function renderRadioMessages() {
   listEl.innerHTML = '';
   radioMessagesHistory.slice().reverse().forEach(msg => {
     const li = document.createElement('li');
+    li.style.cssText = 'padding: 5px 0; border-bottom: 1px solid rgba(0, 255, 102, 0.1);';
+
     const time = new Date(msg.t).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    li.innerHTML = `<strong>${time} - ${msg.title}:</strong> ${msg.content}`;
-    li.style.padding = '5px 0';
-    li.style.borderBottom = '1px solid rgba(0, 255, 102, 0.1)';
+    let headerHTML = `<strong>${time} - ${msg.title}:</strong>`;
+
+    // Pokud má zpráva zvuk, uděláme hlavičku klikatelnou
+    if (msg.audio) {
+      // Přidáme data-audio atribut pro snadnější odchycení události
+      li.dataset.audio = msg.audio;
+      li.style.cursor = 'pointer';
+      headerHTML = `<strong style="text-decoration: underline;">${time} - ${msg.title}:</strong>`;
+
+      li.addEventListener('click', (e) => {
+        // Zabráníme přehrání, pokud se kliklo na něco jiného v li
+        if (!e.currentTarget.dataset.audio) return;
+        if (audioPlayer) {
+          audioPlayer.pause(); // Zastavíme předchozí přehrávání
+        }
+        audioPlayer = new Audio(e.currentTarget.dataset.audio);
+        audioPlayer.play().catch(e => console.error("Chyba při přehrávání zvuku:", e));
+      });
+    }
+    // Použijeme innerHTML, aby se <br> tagy správně vykreslily
+    li.innerHTML = `${headerHTML} ${msg.content}`;
     listEl.appendChild(li);
   });
 }

@@ -39,11 +39,13 @@ export function addHistoryEntry(title, content) {
   const history = loadHistory();
   history.push({ title, content, t: Date.now() });
   saveHistory(history);
+  console.log(`[HISTORIE] ${title}: ${content}`); // Log do systémové konzole
   renderHistory(); // Okamžitě překreslí historii s novou zprávou
 }
 
 export function setStatus(text) {
   statusMsg.textContent = text;
+  console.log(`[STATUS] ${text}`); // Log do systémové konzole
 }
 
 export function updateResourcesPanel() {

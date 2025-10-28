@@ -2,7 +2,7 @@
 
 // Název cache a verze. Změnou verze se při aktualizaci service workeru
 // stará cache smaže a vytvoří se nová s aktuálními soubory.
-const CACHE_NAME = 'metro-terminal-v2';
+const CACHE_NAME = 'metro-terminal-v4';
 
 // Seznam souborů, které chceme uložit do mezipaměti pro offline použití.
 const URLS_TO_CACHE = [
@@ -23,16 +23,20 @@ const URLS_TO_CACHE = [
   'tools.js',
 
   // Moduly v podadresářích
-  'src/mechanics/flashlight.js',
   'src/mechanics/radio.js',
-  'src/mechanics/gasmask.js',
 
   // Datové soubory a assety
   'codes-db.json',
   'radio-messages.json',
-  'assets/geiger-tick.wav', 
-  'assets/radio-static.mp3',
-  'assets/gas-mask-overley.png',
+  'assets/gas-mask-overlay.png', // Přidán chybějící asset pro masku
+  'assets/geiger-tick.wav', // Přidán zvuk pro Geiger
+
+  // Audio soubory pro rádio
+  // Cesty opraveny, aby odpovídaly radio-messages.json a struktuře projektu
+  'messages/coc.mp3',
+  'messages/vcp.mp3',
+  'messages/dmd.mp3',
+  'messages/tdjb.mp3',
 
   // Ikony
   'icon-192.png',

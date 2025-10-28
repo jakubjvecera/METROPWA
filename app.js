@@ -3,9 +3,10 @@ import { renderHistory, setStatus, updateResourcesPanel } from './console.js';
 import { saveJSON } from './storage.js';
 import { loadResources, resetResources, addBattery } from './resources.js';
 import { resetHistory } from './history.js';
-import { initTools, isToolActive } from './tools.js';
+import { initTools, isToolActive, activateRadioPermanently } from './tools.js';
 import { initGeiger, resetExposure, getExposureTimes } from './geiger.js';
 import { loadRadioDB, isRadioCode, processRadioCode } from './src/mechanics/radio.js';
+import { unlockPwaFeatures } from './pwa-unlock.js';
 
 const form = document.getElementById('code-form');
 const input = document.getElementById('code-input');
@@ -41,7 +42,7 @@ form.addEventListener('submit', e => {
   }
 
   // Kód pro získání speciálního obleku
-  if (code === 'OB1234') {
+ /* if (code === 'OB1234') {
     saveJSON('metro_suit_status', { active: true });
     setStatus('Získán speciální protiradiační oblek.');
     input.value = '';
@@ -57,9 +58,10 @@ form.addEventListener('submit', e => {
     input.value = '';
     return;
   }
-
+*/
   if (isRadioCode(code)) {
     if (processRadioCode(code)) {
+      unlockPwaFeatures(); // Znovu aktivujeme audio kontext
       input.value = '';
     }
     return;
@@ -86,6 +88,7 @@ form.addEventListener('submit', e => {
   renderHistory();
   updateResourcesPanel();
   initTools();
-  initGeiger(); // Pouze inicializuje audio pro Geiger, nespouští ho
+  activateRadioPermanently();
+//  initGeiger(); // Pouze inicializuje audio pro Geiger, nespouští ho
   input.focus();
 })();
