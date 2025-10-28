@@ -86,7 +86,7 @@ if ('serviceWorker' in navigator) {
   navigator.serviceWorker.addEventListener('message', event => {
     // Zkontrolujeme, zda zpráva má správný typ
     if (event.data && event.data.type === 'CACHE_COMPLETE') {
-      addRadioSystemMessage('Systém', 'test');
+      addRadioSystemMessage('Systém', 'Všechny soubory načteny.');
     }
   });
 }

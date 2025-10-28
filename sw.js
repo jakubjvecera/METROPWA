@@ -25,6 +25,7 @@ const URLS_TO_CACHE = [
 
   // Moduly v podadresářích
   'src/mechanics/radio.js',
+  'src/mechanics/flashlight.js',
 
   // Datové soubory a assety
   'codes-db.json',
@@ -40,6 +41,8 @@ const URLS_TO_CACHE = [
   // Ikony
   'icon-192.png',
   'icon-512.png',
+  'assets/geiger-tick.wav',
+  'assets/gas-mask-overlay.png'
 ];
 
 // 1. Instalace Service Workeru a uložení souborů do cache
@@ -47,9 +50,16 @@ self.addEventListener('install', event => {
   self.skipWaiting(); // Zajistí okamžitou aktivaci nového SW po instalaci
   event.waitUntil(
     caches.open(CACHE_NAME)
-      .then(cache => {
+      .then(async (cache) => {
         console.log('Otevřena cache:', CACHE_NAME);
-        return cache.addAll(URLS_TO_CACHE);
+        // Změna: Místo cache.addAll(), které selže při první chybě,
+        // použijeme individuální cache.add() pro větší robustnost.
+        const promises = URLS_TO_CACHE.map(url => {
+          return cache.add(url).catch(err => {
+            console.warn(`Nepodařilo se uložit do cache: ${url}`, err);
+          });
+        });
+        await Promise.all(promises);
       })
       .then(() => {
         // Tento blok se spustí, až když je cache.addAll() úspěšně dokončeno.
