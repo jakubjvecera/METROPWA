@@ -112,30 +112,31 @@ export function renderRadioMessages() {
   listEl.innerHTML = '';
   radioMessagesHistory.slice().reverse().forEach(msg => {
     const li = document.createElement('li');
-    li.style.cssText = 'padding: 5px 0; border-bottom: 1px solid rgba(0, 255, 102, 0.1);';
+    li.style.cssText = 'padding: 5px 0; border-bottom: 1px solid rgba(0, 255, 102, 0.1); display: flex; flex-direction: column;';
 
     const time = new Date(msg.t).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    let headerHTML = `<strong>${time} - ${msg.title}:</strong>`;
+    const header = document.createElement('div');
+    header.innerHTML = `<strong>${time} - ${msg.title}:</strong>`;
 
     // Pokud má zpráva zvuk, uděláme hlavičku klikatelnou
     if (msg.audio) {
-      // Přidáme data-audio atribut pro snadnější odchycení události
-      li.dataset.audio = msg.audio;
-      li.style.cursor = 'pointer';
-      headerHTML = `<strong style="text-decoration: underline;">${time} - ${msg.title}:</strong>`;
+      header.style.cursor = 'pointer';
+      header.innerHTML = `<strong style="text-decoration: underline;">${time} - ${msg.title}:</strong>`;
 
-      li.addEventListener('click', (e) => {
-        // Zabráníme přehrání, pokud se kliklo na něco jiného v li
-        if (!e.currentTarget.dataset.audio) return;
+      header.addEventListener('click', () => {
         if (audioPlayer) {
           audioPlayer.pause(); // Zastavíme předchozí přehrávání
         }
-        audioPlayer = new Audio(e.currentTarget.dataset.audio);
+        audioPlayer = new Audio(msg.audio);
         audioPlayer.play().catch(e => console.error("Chyba při přehrávání zvuku:", e));
       });
     }
-    // Použijeme innerHTML, aby se <br> tagy správně vykreslily
-    li.innerHTML = `${headerHTML} ${msg.content}`;
+
+    const content = document.createElement('div');
+    content.innerHTML = msg.content;
+
+    li.appendChild(header);
+    li.appendChild(content);
     listEl.appendChild(li);
   });
 }
