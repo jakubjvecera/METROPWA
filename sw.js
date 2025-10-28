@@ -105,33 +105,31 @@ self.addEventListener('activate', event => {
 
 // 3. Zachytávání síťových požadavků (fetch)
 self.addEventListener('fetch', event => {
-  // Použijeme strategii "Cache first"
+  // Strategie: Cache first, s fallbackem na síť a ošetřením chyb.
   event.respondWith(
     caches.match(event.request)
       .then(response => {
         // Pokud je požadavek v cache, vrátíme ho.
         if (response) {
+          // console.log(`[SW] Odpovídám z cache: ${event.request.url}`);
           return response;
         }
 
+        // console.log(`[SW] Není v cache, zkouším síť: ${event.request.url}`);
         // Pokud není v cache, pokusíme se ho stáhnout ze sítě.
-        return fetch(event.request).then(
-          networkResponse => {
-            // Pokud byl požadavek úspěšný, uložíme ho do cache pro příště.
-            // To je užitečné pro případné dynamicky načítané zdroje.
-            if (networkResponse && networkResponse.status === 200) {
-              const responseToCache = networkResponse.clone();
-              caches.open(CACHE_NAME)
-                .then(cache => {
-                  cache.put(event.request, responseToCache);
-                });
-            }
-            return networkResponse;
+        return fetch(event.request).then(networkResponse => {
+          // Pokud byl požadavek úspěšný, uložíme ho do cache pro příště.
+          if (networkResponse && networkResponse.status === 200) {
+            const responseToCache = networkResponse.clone();
+            caches.open(CACHE_NAME).then(cache => {
+              cache.put(event.request, responseToCache);
+            });
           }
-        ).catch(error => {
-            // Pokud selže síť i cache, můžeme vrátit nějakou fallback stránku,
-            // ale pro naši appku to není nutné, protože vše by mělo být v cache.
-            console.error('Fetch selhal; požadavek není v cache a síť není dostupná.', error);
+          return networkResponse;
+        }).catch(error => {
+          console.error(`[SW] Fetch selhal; požadavek není v cache a síť není dostupná: ${event.request.url}`, error);
+          // Vrátíme generickou chybovou odpověď, aby se předešlo pádu.
+          return new Response('Network error', { status: 408, headers: { 'Content-Type': 'text/plain' } });
         });
       })
   );
